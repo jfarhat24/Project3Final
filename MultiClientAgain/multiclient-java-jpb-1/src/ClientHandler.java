@@ -12,7 +12,6 @@ class loginsList {
 }
 
 
-
 //Runnable class allows us to create a task
 //to be run on a thread
 public class ClientHandler extends Thread implements Runnable {
