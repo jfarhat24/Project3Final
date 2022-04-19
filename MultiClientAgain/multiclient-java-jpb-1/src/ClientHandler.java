@@ -24,7 +24,8 @@ public class ClientHandler extends Thread implements Runnable {
     private PrintWriter outputText;
     private String IDName;
     private String IPAddress;
-
+    DataInputStream dis;
+    DataOutputStream dos;
     private boolean isRoot = false;
     private boolean isLogin = false;
     private String str;
@@ -38,10 +39,13 @@ public class ClientHandler extends Thread implements Runnable {
     Vector messages = new Vector();
     int messageTracker = 0;
 
-    public ClientHandler(Socket socket) throws IOException {
+    public ClientHandler(Socket socket, String s, DataInputStream dainst, DataOutputStream daoust) throws IOException {
     this.socket = socket;
     takeText = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     outputText = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+    this.dis = dainst;
+    this.dos = daoust;
+    this.isLogin = true;
     }
 
     //create an instance
@@ -115,6 +119,17 @@ public class ClientHandler extends Thread implements Runnable {
                     {
 
                     }
+                }
+                else if(strReceived.equalsIgnoreCase("logout")) {
+
+                    this.isLogin = false;
+                    this.socket.close();
+                    break;
+
+                }
+                else if(strReceived.equalsIgnoreCase("message"))
+                {
+
                 }
                 else if(strReceived.equalsIgnoreCase("quit")) {
                     System.out.println("Shutting down server...");

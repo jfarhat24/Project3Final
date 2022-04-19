@@ -1,10 +1,8 @@
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Date;
-import java.util.Scanner;
+import java.net.*;
+import java.util.*;
+
 
 
 
@@ -15,24 +13,36 @@ public class MultiServerJPB1 {
     
     private static final int SERVER_PORT = 8765;
     private static String username = "root";
+
     
     public static void main(String[] args) {
         //createCommunicationLoop();
         createMultithreadCommunicationLoop();
     }//end main
-    
+
+    static Vector<ClientHandler> activeClients = new Vector<>();
+
     public static void createMultithreadCommunicationLoop() {
         int clientNumber = 0;
-        
+
+
+
         try {
             ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+            Socket socket;
             System.out.println("Server started on " + new Date() + ".");
             //listen for new connection request
             while(true) {
 
 
-                Socket socket = serverSocket.accept();
-                clientNumber++;  //increment client num
+                socket = serverSocket.accept();
+
+                DataInputStream dainst = new DataInputStream(socket.getInputStream());
+                DataOutputStream daoust = new DataOutputStream(socket.getOutputStream());
+
+                ClientHandler newClient = new ClientHandler(socket, "client " + clientNumber, dainst, daoust);
+
+
 
                 //Find client's host name 
                 //and IP address
@@ -45,9 +55,10 @@ public class MultiServerJPB1 {
                         inetAddress.getHostAddress());
                 
                 //create and start new thread for the connection
-                Thread clientThread = new Thread(
-                        new ClientHandler(clientNumber, socket, serverSocket));
-                clientThread.start();  
+                Thread clientThread = new Thread(newClient);
+                activeClients.add(newClient);
+                clientThread.start();
+                clientNumber++;  //increment client num
             }//end while           
         }
         catch(IOException ex) {
