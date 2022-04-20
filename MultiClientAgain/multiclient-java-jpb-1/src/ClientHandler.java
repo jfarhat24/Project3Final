@@ -10,7 +10,6 @@ class loginsList {
     public String PW;
 }
 
-
 //Runnable class allows us to create a task
 //to be run on a thread
 public class ClientHandler extends Thread implements Runnable {
@@ -26,10 +25,8 @@ public class ClientHandler extends Thread implements Runnable {
     private boolean isLogin = false;
     private String str;
 
-
     loginsList Ll[] = new loginsList[5];
     File messagefile = new File("/ThisFolder/");
-
     private BufferedReader bR = new BufferedReader(new FileReader(messagefile));
     int numofMessages = 0;
     Vector messages = new Vector();
@@ -41,26 +38,18 @@ public class ClientHandler extends Thread implements Runnable {
     this.dos = daoust;
     this.isLogin = true;
     }
-
     //create an instance
     public ClientHandler(int clientNumber, Socket socket, ServerSocket serverSocket) throws FileNotFoundException {
         this.socket = socket;
         this.serverSocket = serverSocket;
         this.clientNumber = clientNumber;
     }//end ctor
-
-
     //run() method is required by all
     //Runnable implementers
     @Override
     public void run() {
         //run the thread in here
-
-
         try {
-
-
-
             while ((str = bR.readLine()) != null) {
                 messages.add(str);
                 numofMessages++;
@@ -73,26 +62,20 @@ public class ClientHandler extends Thread implements Runnable {
             {
                 Ll[i] = new loginsList();
             }
-
             //input login text and passwords here
-
             boolean firstLine = false;
             boolean firstRun = false;
-
             String line;
-
             synchronized(handlers)
             {
                 handlers.addElement(this);
             }
-
             try
             {
                 double num1 = 0.00;
                 double num2 = 0.00;
                 double answer = 0.00;
                 double answer2 = 0.00; //these set up the variables for later
-
                 String newListName = IDName +"_solutions.txt"; //creates the file of the IDName with the solutions.
                 File newList = new File(newListName);
                 String returningAnswers = null;
@@ -102,24 +85,16 @@ public class ClientHandler extends Thread implements Runnable {
                 DataOutputStream listWrite = new DataOutputStream(new BufferedOutputStream(theList)); //sorts through the text lists
                 String givingList = "";
 
-            DataInputStream inputFromClient =
-                    new DataInputStream(socket.getInputStream());
-            
-            DataOutputStream outputToClient = 
-                    new DataOutputStream(socket.getOutputStream());
-            
-            
+            DataInputStream inputFromClient = new DataInputStream(socket.getInputStream());
+            DataOutputStream outputToClient = new DataOutputStream(socket.getOutputStream());
             //continuously serve the client
             while(true) {                
                 String strReceived = inputFromClient.readUTF();
-                System.out.println("\n\t[[Command " + strReceived +
-                        " received from client " + clientNumber +"]]");
+                System.out.println("\n\t[[Command " + strReceived + " received from client " + clientNumber +"]]");
                 
                 if(strReceived.equalsIgnoreCase("hello")) {
-                    System.out.println("Sending hello to client " +
-                            clientNumber);
-                    outputToClient.writeUTF("hello client " +
-                            clientNumber + "!");
+                    System.out.println("Sending hello to client " + clientNumber);
+                    outputToClient.writeUTF("hello client " + clientNumber + "!");
                 }
                 else if(strReceived.equalsIgnoreCase("message"))
                 {
@@ -129,18 +104,14 @@ public class ClientHandler extends Thread implements Runnable {
                     }
                     else
                     {
-                        System.out.println("Say who you're sending your message to." +
-                                clientNumber);
+                        System.out.println("Say who you're sending your message to." + clientNumber);
                         String newName = strReceived; //takes in the name of the person's intended target
-
-                        System.out.println("Say who you're sending your message to." +
-                                clientNumber);
+                        System.out.println("Say who you're sending your message to." + clientNumber);
                         String newText = strReceived; //takes in the message
                         outputToClient.writeUTF(newName + newText);
                     }
                 }
                 else if(strReceived.equalsIgnoreCase("logout")) {
-
                     if(!isLogin)
                     {
                         System.out.println("Not logged in, please log in!");
@@ -151,13 +122,8 @@ public class ClientHandler extends Thread implements Runnable {
                         this.socket.close();
                         break;
                     }
-
-
-
-
                 }
                 else if(strReceived.equalsIgnoreCase("quit")) {
-
                     if(!isRoot)
                     {
                         System.out.println("Not logged in as Root!"); //this would prevent a full shutdown from happening without root
@@ -170,15 +136,9 @@ public class ClientHandler extends Thread implements Runnable {
                         socket.close();
                         break;  //get out of loop
                     }
-
-
                 }
                 else if (strReceived.contains("SOLVE") || (strReceived.contains("solve"))) {
-
-
                     numbersOnly = strReceived.replaceAll("[^0-9]", "");
-
-
                     if (strReceived.contains("-r"))
                     {
                         if(numbersOnly.length() == 2) //checks if there's two numbers
@@ -211,7 +171,6 @@ public class ClientHandler extends Thread implements Runnable {
                         }
                     } else if (strReceived.contains("-c")) {
                         double pi = 3.14;
-
                         if(numbersOnly.length() == 1) //checks if there's one number
                         {
                             num1 = Character.getNumericValue(numbersOnly.charAt(0));
@@ -219,35 +178,24 @@ public class ClientHandler extends Thread implements Runnable {
                             returningAnswers = "Circumference of circle is: " + answer;
                             listWrite.writeUTF(returningAnswers + "\n");
                             outputToClient.writeUTF(returningAnswers);
-
                         }
                         else
                         {
                             System.out.println("Wrong numbers");
-
                             returningAnswers = "Error: No radius found or other error.";
                             listWrite.writeUTF(returningAnswers + "\n");
                             outputToClient.writeUTF(returningAnswers);
                         }
-
                     }
                     else
                     {
                         System.out.println("No numbers");
                         outputToClient.writeUTF("Error: Please append -r or -c to the statement you're attempting.");
                     }
-
+                
                 } else if (strReceived.contains("LIST") || (strReceived.contains("list"))) {
                     {
                         if ((strReceived.contains("-all")) && (IDName.equalsIgnoreCase("root"))) { //root access works but program does not know how to make other lists or sort through them.
-//                            String appended = "_solutions.txt";
-//
-//                            File f = new File("src");
-//                            File[] textFiles = f.listFiles(textFilter);
-//                            for(int j = 0; j < textFiles.length(); j++)
-//                            {
-//
-//                            }
                             outputToClient.writeUTF("You have root access, but this file does not have the ability to have other users or access their files. Please try again without the -all.");
 
                         } else if ((strReceived.contains("-all")) && (!IDName.equalsIgnoreCase("root"))) {
@@ -268,14 +216,11 @@ public class ClientHandler extends Thread implements Runnable {
                         + strReceived);
                     outputToClient.writeUTF("Unknown command.  "
                             + "Please try again.");
-                    
                 }
             }//end while
         }
         catch(IOException ex) {
             ex.printStackTrace();
         }//end try-catch
-
     }//end run
-    
 }//end ClientHandler
