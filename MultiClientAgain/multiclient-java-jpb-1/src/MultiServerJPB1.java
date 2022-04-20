@@ -58,7 +58,7 @@ public class MultiServerJPB1 {
                 Thread clientThread = new Thread(newClient);
                 activeClients.add(newClient);
                 clientThread.start();
-                clientNumber++;  //increment client num
+                clientNumber++;  //increment client number
             }//end while           
         }
         catch(IOException ex) {

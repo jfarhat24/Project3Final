@@ -17,10 +17,8 @@ class loginsList {
 public class ClientHandler extends Thread implements Runnable {
     private Socket socket;  //connected socket
     private ServerSocket serverSocket;  //server's socket
-    private int clientNumber;
+    private int clientNumber; //counts up as clients join
     static Vector<ClientHandler> handlers = new Vector<ClientHandler>(20);
-    private BufferedReader takeText;
-    private PrintWriter outputText;
     private String IDName;
     private String IPAddress;
     DataInputStream dis;
@@ -31,7 +29,7 @@ public class ClientHandler extends Thread implements Runnable {
 
 
     loginsList Ll[] = new loginsList[5];
-    File messagefile = new File("removethisifnotused");
+    File messagefile = new File("/ThisFolder/");
 
     private BufferedReader bR = new BufferedReader(new FileReader(messagefile));
     int numofMessages = 0;
@@ -40,8 +38,6 @@ public class ClientHandler extends Thread implements Runnable {
 
     public ClientHandler(Socket socket, String s, DataInputStream dainst, DataOutputStream daoust) throws IOException {
     this.socket = socket;
-    takeText = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    outputText = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
     this.dis = dainst;
     this.dos = daoust;
     this.isLogin = true;
@@ -116,26 +112,49 @@ public class ClientHandler extends Thread implements Runnable {
                     }
                     else
                     {
+                        System.out.println("Say who you're sending your message to." +
+                                clientNumber);
+                        String newName = strReceived;
 
+                        System.out.println("Say who you're sending your message to." +
+                                clientNumber);
+                        String newText = strReceived;
+                        outputToClient.writeUTF(newName + newText);
                     }
                 }
                 else if(strReceived.equalsIgnoreCase("logout")) {
 
-                    this.isLogin = false;
-                    this.socket.close();
-                    break;
+                    if(!isLogin)
+                    {
+                        System.out.println("Not logged in, please log in!");
+                    }
+                    else
+                    {
+                        this.isLogin = false;
+                        this.socket.close();
+                        break;
+                    }
 
-                }
-                else if(strReceived.equalsIgnoreCase("message"))
-                {
+
+
 
                 }
                 else if(strReceived.equalsIgnoreCase("quit")) {
-                    System.out.println("Shutting down server...");
-                    outputToClient.writeUTF("Shutting down server...");
-                    serverSocket.close();
-                    socket.close();
-                    break;  //get out of loop
+
+                    if(!isRoot)
+                    {
+                        System.out.println("Not logged in as Root!"); //this would prevent a full shutdown from happening without root
+                    }
+                    else
+                    {
+                        System.out.println("Shutting down server...");
+                        outputToClient.writeUTF("Shutting down server...");
+                        serverSocket.close(); //closes the server
+                        socket.close();
+                        break;  //get out of loop
+                    }
+
+
                 }
                 else {
                     System.out.println("Unknown command received: " 
