@@ -1,8 +1,7 @@
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Vector;
+import java.net.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,7 +55,12 @@ public class ClientHandler extends Thread implements Runnable {
     @Override
     public void run() {
         //run the thread in here
+
+
         try {
+
+
+
             while ((str = bR.readLine()) != null) {
                 messages.add(str);
                 numofMessages++;
@@ -84,6 +88,19 @@ public class ClientHandler extends Thread implements Runnable {
 
             try
             {
+                double num1 = 0.00;
+                double num2 = 0.00;
+                double answer = 0.00;
+                double answer2 = 0.00; //these set up the variables for later
+
+                String newListName = IDName +"_solutions.txt"; //creates the file of the IDName with the solutions.
+                File newList = new File(newListName);
+                String returningAnswers = null;
+                String numbersOnly = null;
+                Scanner giveList = new Scanner(newList);
+                FileOutputStream theList = new FileOutputStream(newList);
+                DataOutputStream listWrite = new DataOutputStream(new BufferedOutputStream(theList)); //sorts through the text lists
+                String givingList = "";
 
             DataInputStream inputFromClient =
                     new DataInputStream(socket.getInputStream());
@@ -114,11 +131,11 @@ public class ClientHandler extends Thread implements Runnable {
                     {
                         System.out.println("Say who you're sending your message to." +
                                 clientNumber);
-                        String newName = strReceived;
+                        String newName = strReceived; //takes in the name of the person's intended target
 
                         System.out.println("Say who you're sending your message to." +
                                 clientNumber);
-                        String newText = strReceived;
+                        String newText = strReceived; //takes in the message
                         outputToClient.writeUTF(newName + newText);
                     }
                 }
@@ -155,6 +172,96 @@ public class ClientHandler extends Thread implements Runnable {
                     }
 
 
+                }
+                else if (strReceived.contains("SOLVE") || (strReceived.contains("solve"))) {
+
+
+                    numbersOnly = strReceived.replaceAll("[^0-9]", "");
+
+
+                    if (strReceived.contains("-r"))
+                    {
+                        if(numbersOnly.length() == 2) //checks if there's two numbers
+                        {
+                            num1 = Character.getNumericValue(numbersOnly.charAt(0));
+                            num2 = Character.getNumericValue(numbersOnly.charAt(1));
+
+                            answer = (num1 * 2) + (num2 * 2);
+                            answer2 = num1 * num2;
+                            returningAnswers = "Sides " + num1 + " " + num2 + ": Rectangle’s perimeter and area is: " + answer + ", " + answer2;
+                            listWrite.writeUTF(returningAnswers + "\n");
+                            outputToClient.writeUTF(returningAnswers);
+                        }
+                        else if(numbersOnly.length() == 1) //checks if there's one number
+                        {
+                            num1 = Character.getNumericValue(numbersOnly.charAt(0));
+                            num2 = Character.getNumericValue(numbersOnly.charAt(0));
+                            answer = (num1 * 2) + (num2 * 2);
+                            answer2 = num1 * num2;
+                            returningAnswers = "Sides " + num1 + " " + num2 + ": Square’s perimeter and area is: " + answer + ", " + answer2;
+                            listWrite.writeUTF(returningAnswers + "\n");
+                            outputToClient.writeUTF(returningAnswers);
+                        }
+                        else
+                        {
+                            System.out.println("Wrong numbers");
+                            returningAnswers = "Error: No sides found.";
+                            listWrite.writeUTF(returningAnswers + "\n");
+                            outputToClient.writeUTF(returningAnswers);
+                        }
+                    } else if (strReceived.contains("-c")) {
+                        double pi = 3.14;
+
+                        if(numbersOnly.length() == 1) //checks if there's one number
+                        {
+                            num1 = Character.getNumericValue(numbersOnly.charAt(0));
+                            answer = 2 * pi * num1;
+                            returningAnswers = "Circumference of circle is: " + answer;
+                            listWrite.writeUTF(returningAnswers + "\n");
+                            outputToClient.writeUTF(returningAnswers);
+
+                        }
+                        else
+                        {
+                            System.out.println("Wrong numbers");
+
+                            returningAnswers = "Error: No radius found or other error.";
+                            listWrite.writeUTF(returningAnswers + "\n");
+                            outputToClient.writeUTF(returningAnswers);
+                        }
+
+                    }
+                    else
+                    {
+                        System.out.println("No numbers");
+                        outputToClient.writeUTF("Error: Please append -r or -c to the statement you're attempting.");
+                    }
+
+                } else if (strReceived.contains("LIST") || (strReceived.contains("list"))) {
+                    {
+                        if ((strReceived.contains("-all")) && (IDName.equalsIgnoreCase("root"))) { //root access works but program does not know how to make other lists or sort through them.
+//                            String appended = "_solutions.txt";
+//
+//                            File f = new File("src");
+//                            File[] textFiles = f.listFiles(textFilter);
+//                            for(int j = 0; j < textFiles.length(); j++)
+//                            {
+//
+//                            }
+                            outputToClient.writeUTF("You have root access, but this file does not have the ability to have other users or access their files. Please try again without the -all.");
+
+                        } else if ((strReceived.contains("-all")) && (!IDName.equalsIgnoreCase("root"))) {
+                            outputToClient.writeUTF("Error: you are not the root user");
+                        } else {
+                            givingList += IDName + "\n";
+
+                            while(giveList.hasNextLine())
+                            {
+                                givingList += giveList.nextLine() + "\n";
+                            }
+                            outputToClient.writeUTF(givingList); //writing into root_solutions.txt will cause this line to work as intended.
+                        }
+                    }
                 }
                 else {
                     System.out.println("Unknown command received: " 
